@@ -1,3 +1,6 @@
+""" Evaluate real dataset. This code requires access to the drone UWB dataset referred to in [1]. 
+While waiting for the dataset to be published, please contact the authors to get access. 
+"""
 import itertools
 import time
 import os
