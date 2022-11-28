@@ -137,7 +137,7 @@ def simulate_results(params_dir, out_dir, save_results=True):
                         ttot = time.time() - t1
                         result_dict.update(
                             {
-                                "rmse": rmse,
+                                "error": rmse,
                                 "cert value": cert_value,
                                 "cost": cost,
                                 "rho": rho,
@@ -173,17 +173,19 @@ if __name__ == "__main__":
     import sys
 
     out_dir = "_results/"
-    #params_dir = "simulation_noise/"
-    params_dir = "simulation_noise_100/"
 
     logging = parse_log_argument(description="Run simulation experiments.")
     if logging:
         old_stdout = sys.stdout
-        logfile = os.path.join(out_dir, "simulate_cert_new.log")
+        logfile = os.path.join(out_dir, "simulate_noise.log")
         f = open(logfile, "w")
         sys.stdout = f
 
     print(f"Running experiment {params_dir}")
+    params_dir = "simulation_noise/"
+    simulate_results(params_dir, out_dir=out_dir)
+
+    params_dir = "simulation_noise_100/"
     simulate_results(params_dir, out_dir=out_dir)
 
     if logging:
