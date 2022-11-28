@@ -28,8 +28,10 @@ def simulate_results(params_dir, out_dir, save_results=True):
     params = load_parameters(params_dir, out_dir, default_file=DEFAULT_FILE)
     fname = os.path.join(out_dir, params_dir, "results.pkl")
 
-    n_inits = len(params["init_seed"])
-    n_setups = len(params["setup_seed"])
+    n_inits = params["init_seed"]
+    n_setups = params["setup_seed"]
+    init_seeds = np.arange(n_inits)
+    setup_seeds = np.arange(n_setups)
 
     results_columns = [
         "setup seed",
@@ -57,7 +59,7 @@ def simulate_results(params_dir, out_dir, save_results=True):
             )
             p = progressbar.ProgressBar(max_value=n_setups * n_inits)
 
-            for i, setup_seed in enumerate(params["setup_seed"]):
+            for i, setup_seed in enumerate(setup_seeds):
                 sigma_dist_est = (
                     params["sigma_dist_est"]
                     if params["sigma_dist_est"] is not None
@@ -80,7 +82,7 @@ def simulate_results(params_dir, out_dir, save_results=True):
                 results_here = pd.DataFrame(
                     index=range(n_inits), columns=results_columns
                 )
-                for init_seed in params["init_seed"]:
+                for init_seed in init_seeds:
                     p.update(i * n_inits + init_seed)
 
                     np.random.seed(init_seed)  # to make sure we can reproduce this.

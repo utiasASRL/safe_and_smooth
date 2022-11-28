@@ -1,0 +1,26 @@
+{
+    "N": 100,
+    "K": 6,
+    "d": 2,
+    "sigma_dist_est": null,
+    "sigma_acc_real": 0.2,
+    "setup_seed": 100,
+    "init_seed": 100,
+    "sigma_dist_real": [
+        1e-4,
+        1e-3,
+        1e-2,
+        1e-1,
+        1,
+        1e1,
+        1e2
+    ],
+    "sigma_acc_est": [
+        0.2
+    ],
+    "regularization": [
+        "no",
+        "zero-velocity",
+        "constant-velocity"
+    ]
+}

@@ -14,7 +14,8 @@ from helper_params import load_parameters, parse_log_argument
 from problem import Problem
 
 ANCHOR_CHOICE = {"top": [0, 2, 3, 5], "diagonal": [0, 1, 3, 4], "all": range(6)}
-DEFAULT_FILE = "default_real.py"
+DEFAULT_FILE = "default_real.json"
+
 
 def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
     """

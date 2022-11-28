@@ -235,7 +235,7 @@ def fill_fn_tp(row):
     return row
 
 
-def plot_cert_fn_tp(results, xlabel="sigma dist real", ax=None, xticks=None, **kwargs):
+def plot_cert_fn_tp(results, xlabel="sigma dist real", ylabel="rmse", ax=None, xticks=None, **kwargs):
     if not "result" in results.columns:
         results.loc[:, "result"] = ""
         results = results.apply(fill_fn_tp, axis=1)
@@ -250,7 +250,7 @@ def plot_cert_fn_tp(results, xlabel="sigma dist real", ax=None, xticks=None, **k
         df = results[results.result == label]
         ax.scatter(
             df[xlabel].values,
-            df.rmse.values,
+            df[ylabel].values,
             color=c,
             marker=s,
             label=label,

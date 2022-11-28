@@ -1,19 +1,24 @@
-def load_parameters(params_dir, out_dir, default_file="default.py"):
-    from importlib import import_module
-    import os
-    import sys
+def read_json(filename):
+    import json
 
-    params_file = "params.py"
-    if os.path.exists(os.path.join(out_dir, default_file)):
-        sys.path.append(out_dir)
-        default_mod = import_module(default_file.split(".")[0])
-        params = default_mod.params
+    with open(filename, "r") as f:
+        data = json.load(f)
+    return data
+
+
+def load_parameters(params_dir, out_dir, default_file="default.json"):
+    import os
+
+    default_file = os.path.join(out_dir, default_file)
+    if os.path.exists(default_file):
+        params = read_json(default_file)
     else:
         params = {}
 
-    sys.path.append(os.path.join(out_dir, params_dir))
-    params_mod = import_module(params_file.split(".")[0])
-    params.update(params_mod.params)
+    # sys.path.insert(0, os.path.join(out_dir, params_dir))
+    params_file = os.path.join(out_dir, params_dir, "params.json")
+    params.update(read_json(params_file))
+
     return params
 
 
