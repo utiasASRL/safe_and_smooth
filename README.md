@@ -3,7 +3,8 @@
 This repository contains the code to reproduce all results of the paper:
 
 ```
-Dümbgen, Frederike, Connor Holmes, and Timothy D. Barfoot. “Safe and Smooth: Certified Continuous-Time Range-Only Localization.”, arXiv:2209.04266 [cs.RO], Nov. 2022
+Dümbgen, Frederike, Connor Holmes, and Timothy D. Barfoot. “Safe and Smooth: 
+Certified Continuous-Time Range-Only Localization.”, arXiv:2209.04266 [cs.RO], Nov. 2022
 ```
 
 A pre-print is available at [https://arxiv.org/abs/2209.04266](https://arxiv.org/abs/2209.04266).
@@ -52,9 +53,7 @@ After generating, all data can be evaluated, and new figures created, using the 
 ## Code references
 
 The code refers to the following papers:
-```
-[1] Dümbgen, Frederike, Connor Holmes, and Timothy D. Barfoot. “Safe and Smooth: Certified Continuous-Time Range-Only Localization.”, arXiv:2209.04266 [cs.RO], Nov. 2022
-[2] Barfoot, Tim, Chi Hay Tong, and Simo Sarkka. “Batch Continuous-Time Trajectory Estimation as Exactly Sparse Gaussian Process Regression,” 2014. https://doi.org/10.15607/RSS.2014.X.001.
-[3] Barfoot, Timothy D. State Estimation for Robotics. Cambridge University Press, 2017. https://doi.org/10.1017/9781316671528.
 
-```
+- [1] Dümbgen, Frederike, Connor Holmes, and Timothy D. Barfoot. “Safe and Smooth: Certified Continuous-Time Range-Only Localization.”, arXiv:2209.04266 [cs.RO], Nov. 2022
+- [2] Barfoot, Tim, Chi Hay Tong, and Simo Sarkka. “Batch Continuous-Time Trajectory Estimation as Exactly Sparse Gaussian Process Regression,” 2014. https://doi.org/10.15607/RSS.2014.X.001.
+- [3] Barfoot, Timothy D. State Estimation for Robotics. Cambridge University Press, 2017. https://doi.org/10.1017/9781316671528.
