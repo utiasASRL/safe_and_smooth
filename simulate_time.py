@@ -42,7 +42,9 @@ if __name__ == "__main__":
         theta_0 = np.random.rand(N, 2 * prob.d)
 
         # converge only to tol1e-5 to save time
-        theta_hat, stats = gauss_newton(theta_0, prob, regularization=regularization, tol=1e-5)
+        theta_hat, stats = gauss_newton(
+            theta_0, prob, regularization=regularization, tol=1e-8
+        )
 
         # makes sure to only save time for actual solve,
         # and not time to generate other data used for

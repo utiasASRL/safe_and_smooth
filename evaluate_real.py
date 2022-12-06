@@ -194,14 +194,16 @@ if __name__ == "__main__":
         f = open(logfile, "w")
         sys.stdout = f
 
+    save_results = False
+
     params_dir = "real_top_estimate/"
-    evaluate_datasets(params_dir, out_dir, calibrate=True)
+    evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
-    params_dir = "real_top_calib/"
-    evaluate_datasets(params_dir, out_dir, calibrate=True)
+    # params_dir = "real_top_calib/"
+    # evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
-    params_dir = "real_top/"
-    evaluate_datasets(params_dir, out_dir, calibrate=True)
+    # params_dir = "real_top/"
+    # evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
     if logging:
         sys.stdout = old_stdout

@@ -10,6 +10,7 @@ _results/*.pkl
 _results/*.log
 _results/*/*.pkl
 _results_server/
+_results_final/
 
 _scripts/get_server_results.sh
 _scripts/*.txt
