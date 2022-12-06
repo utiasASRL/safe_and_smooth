@@ -34,7 +34,6 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
 
     time_range = params["time_range"]
     save_estimate = params["save_estimate"]
-    time_range = params["time_range"]
     sigma_dist_est = params["sigma_dist_est"]
 
     datasets = params["datasets"]
@@ -185,6 +184,7 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
 if __name__ == "__main__":
     import sys
 
+    save_results = True
     out_dir = "_results/"
 
     logging = parse_log_argument(description="Run simulation experiments.")
@@ -194,16 +194,15 @@ if __name__ == "__main__":
         f = open(logfile, "w")
         sys.stdout = f
 
-    save_results = False
 
     params_dir = "real_top_estimate/"
     evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
-    # params_dir = "real_top_calib/"
-    # evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
+    params_dir = "real_top_calib/"
+    evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
-    # params_dir = "real_top/"
-    # evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
+    params_dir = "real_top/"
+    evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
 
     if logging:
         sys.stdout = old_stdout

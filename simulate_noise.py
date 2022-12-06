@@ -187,9 +187,9 @@ if __name__ == "__main__":
     print(f"Running experiment {params_dir}")
     simulate_results(params_dir, out_dir=out_dir)
 
-    params_dir = "simulation_noise_100/"
-    print(f"Running experiment {params_dir}")
-    simulate_results(params_dir, out_dir=out_dir)
+    #params_dir = "simulation_noise_100/"
+    #print(f"Running experiment {params_dir}")
+    #simulate_results(params_dir, out_dir=out_dir)
 
     if logging:
         sys.stdout = old_stdout
