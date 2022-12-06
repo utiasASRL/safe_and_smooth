@@ -34,7 +34,6 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
 
     time_range = params["time_range"]
     save_estimate = params["save_estimate"]
-    time_range = params["time_range"]
     sigma_dist_est = params["sigma_dist_est"]
 
     datasets = params["datasets"]
