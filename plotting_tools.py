@@ -83,10 +83,7 @@ def make_dirs_safe(path):
 def savefig(fig, name, verbose=True):
     make_dirs_safe(name)
     ext = name.split(".")[-1]
-    if ext in ["pdf", "eps"]:
-        fig.savefig(name, bbox_inches="tight", pad_inches=0)
-    else:
-        fig.savefig(name, bbox_inches="tight", pad_inches=0, dpi=500)
+    fig.savefig(name, bbox_inches="tight", pad_inches=0, dpi=200)
     if verbose:
         print(f"saved plot as {name}")
 
@@ -318,7 +315,8 @@ def plot_3d_curves(
             ax = plt.add_subplot(1, 1, 1, projection="3d")
         for label, traj in trajs.items():
             kwargs = styles.get(label, {})
-            ax.scatter(traj[:, 0], traj[:, 1], traj[:, 2], label=label, **kwargs)
+            ax.scatter(traj[:, 0], traj[:, 1], traj[:, 2], label=label, 
+                       rasterized=True, **kwargs)
 
         if anchors is not None:
             ax.scatter(
@@ -333,25 +331,17 @@ def plot_3d_curves(
         ax.set_xticklabels([])
         ax.set_yticklabels([])
         ax.set_zticklabels([])
-        # ax.set_zticklabels([0, 2, 4, 6], va="center")
         ax.set_xticks([-4, -2, 0, 2, 4])
         ax.set_yticks([-4, -2, 0, 2, 4])
-        ax.set_zticks([0, 2, 4, 6])
-        # ax.set_xticks([-2, 0, 2])
+        ax.set_zticks([0, 2, 4])
         if zlabel:
-            # ax.set_zticklabels([0, 2, 4, 6], va="center", ha="left")
-            ax.set_zlabel("z [m]", labelpad=-15)
+            ax.set_zlabel("z [m]", labelpad=-15, fontsize=12)
         else:
             ax.set_zticklabels([])
-        # ax.set_xticklabels(
-        #    [-2, 0, 2],
-        #    va="center",
-        # )
         ax.view_init(elev=10, azim=-45)
-        ax.set_xlabel("x [m]", labelpad=-15)
-        ax.set_ylabel("y [m]", labelpad=-15)
+        ax.set_xlabel("x [m]", labelpad=-15, fontsize=12)
+        ax.set_ylabel("y [m]", labelpad=-15, fontsize=12)
         ax.dist = 8
-        # ax.axis._axinfo["label"]["space_factor"] = 0.1
 
 
 def plot_covariance(Cov, centre, scaling, ax, log=False, **kwargs):
