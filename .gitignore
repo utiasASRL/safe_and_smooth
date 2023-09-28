@@ -3,6 +3,7 @@
 __pycache__/
 *.code-workspace
 *.vscode/
+*.egg-info/
 
 _plots/
 _data/
