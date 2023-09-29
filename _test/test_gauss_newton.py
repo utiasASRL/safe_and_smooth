@@ -1,12 +1,8 @@
 import numpy as np
 
-import sys
-from os.path import dirname
-
-sys.path.append(dirname(__file__) + "/../")
-
-from gauss_newton import *
-from problem import Problem, generate_distances
+from poly_certificate.certificate import get_rho_and_lambdas
+from poly_certificate.gauss_newton import *
+from poly_certificate.problem import Problem, generate_distances
 
 N = 10
 d = 3
@@ -143,7 +139,6 @@ def test_cost(seed=0):
 
 def test_certificate(seed=0):
     # calculate cost at optimum and rho at optimum --> they should be equal.
-    from certificate import get_rho_and_lambdas
 
     prob = generate_problem(seed=seed)
     theta_0 = prob.gt_init(regularization=regularization)

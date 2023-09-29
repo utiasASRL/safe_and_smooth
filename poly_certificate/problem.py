@@ -1,14 +1,25 @@
 import numpy as np
 from numpy.linalg import norm
+import matplotlib.pylab as plt
+from scipy.interpolate import interp1d
 
-from gaussian_process import get_phi, get_Qi_inv
+from poly_certificate.datasets import read_anchors, read_dataset
+from poly_certificate.gaussian_process import get_phi, get_Qi_inv
+
 
 def generate_random_trajectory(
-    N, d, v_sigma=0.2, fix_x0=True, return_velocities=False, fix_v0=True
+    N,
+    d,
+    times,
+    v_sigma=0.2,
+    fix_x0=True,
+    x0=None,
+    return_velocities=False,
+    fix_v0=True,
 ):
-    if fix_x0:
+    if fix_x0 and x0 is None:
         x0 = np.ones(d)
-    else:
+    elif fix_x0 is False:
         x0 = np.random.rand(d) * 2 - 1  # uniform between -1, 1
 
     if fix_v0:
@@ -18,8 +29,8 @@ def generate_random_trajectory(
 
     trajectory = np.empty((N, d))
     velocities = np.empty((N, d))
-    # times = sorted(np.random.uniform(0, T, T))
-    times = np.arange(N, step=1.0)
+    if times is None:
+        times = np.arange(N, step=1.0)
 
     trajectory[0] = x0
     velocities[0] = v0
@@ -28,7 +39,7 @@ def generate_random_trajectory(
         trajectory[i] = trajectory[i - 1] + velocities[i - 1] * dt
         velocities[i] = velocities[i - 1] + np.random.normal(scale=v_sigma, size=d)
     if return_velocities:
-        return trajectory, velocities, times
+        return trajectory, velocities
     else:
         return trajectory
 
@@ -51,6 +62,7 @@ def generate_anchors(M, d, trajectory=None, method="scale"):
         anchors = (anchors - anch_min) / (anch_max - anch_min) * size
         anchors += traj_min
     return anchors
+
 
 def reflect_points(points, anchors, verbose=False):
     """
@@ -97,10 +109,7 @@ class Problem(object):
         calibrate=False,
         cut_ends=False,
     ):
-        from datasets import read_anchors, read_dataset
-
         def interpolate(y_given, x_given, x_new):
-            from scipy.interpolate import interp1d
 
             inter = interp1d(x_given, y_given, fill_value="extrapolate")
             return inter(x_new)
@@ -167,7 +176,22 @@ class Problem(object):
             prob.D_noisy = D_noisy**2
         else:
             prob.D_noisy = D_noisy**2
+
+        # prune points where we don't have distance measurements.
+        prob.prune()
+
         return prob
+
+    def prune(self):
+        indices = np.any(self.W, axis=0)
+        self.N = np.sum(indices)
+        self.W = self.W[:, indices]
+        if self.trajectory is not None:
+            self.trajectory = self.trajectory[indices, :]
+        if self.times is not None:
+            self.times = self.times[indices]
+        if self.D_noisy is not None:
+            self.D_noisy = self.D_noisy[:, indices]
 
     def add_noise(self, sigma):
         D_noisy = self.D_noisy.copy()
@@ -176,7 +200,7 @@ class Problem(object):
         self.D_noisy = D_noisy**2
 
     def __init__(
-        self, N, d, K, sigma_acc_est=SIGMA_ACC_EST, sigma_dist_est=SIGMA_DIST_EST
+        self, N, d, K=None, sigma_acc_est=SIGMA_ACC_EST, sigma_dist_est=SIGMA_DIST_EST
     ):
         self.N = N
         self.d = d
@@ -191,12 +215,21 @@ class Problem(object):
 
         self.Q = sigma_acc_est**2 * np.eye(d)
         self.Q_inv = 1 / sigma_acc_est**2 * np.eye(d)
-        self.Sig_inv = 1 / sigma_dist_est**2 * np.eye(K)
+        if self.K is not None:
+            self.Sig_inv = 1 / sigma_dist_est**2 * np.eye(K)
 
         # ground truth
         self.velocities = None
         self.trajectory = None
         self.theta = None
+
+    def extract_timerange(self, mini, maxi):
+        self.trajectory = self.trajectory[mini:maxi]
+        self.times = self.times[mini:maxi]
+        self.theta = self.theta[mini:maxi]
+        self.D_noisy = self.D_noisy[:, mini:maxi]
+        self.W = self.W[:, mini:maxi]
+        self.N = self.trajectory.shape[0]
 
     def calculate_noise_level(self, squared=True):
         D_gt = generate_distances(self.trajectory, self.anchors)
@@ -219,17 +252,21 @@ class Problem(object):
         if verbose:
             print("sigma_acc_real, sigma_dist_real:")
             print(sigma_acc_real, sigma_dist_real)
-        self.trajectory, self.velocities, self.times = generate_random_trajectory(
-            self.N, self.d, v_sigma=sigma_acc_real, return_velocities=True
+
+        self.times = np.arange(self.N)
+        self.trajectory, self.velocities = generate_random_trajectory(
+            self.N, self.d, self.times, v_sigma=sigma_acc_real, return_velocities=True
         )
         self.theta = np.c_[self.trajectory, self.velocities]
-        self.anchors = generate_anchors(
-            self.K, self.d, trajectory=self.trajectory, method=anchor_method
-        )  # K x d
+        if self.K is not None:
+            self.anchors = generate_anchors(
+                self.K, self.d, trajectory=self.trajectory, method=anchor_method
+            )  # K x d
+            self.generate_distances(sigma_dist_real)
+
         if verbose:
             print("first two points:", self.trajectory[:3, :])
             print("anchors:", self.anchors)
-        self.generate_distances(sigma_dist_real)
 
     def generate_distances(self, sigma_dist_real=SIGMA_DIST_REAL):
         self.D_noisy = (
@@ -239,15 +276,34 @@ class Problem(object):
         self.W = np.ones(self.D_noisy.shape, dtype=bool)
         self.E = self.W.size
 
+    def generate_W_roundrobin(self, use_anchors=None, measurements_per_time=1):
+        """Initialize W with only limited measurement at a time.
+        Optionally use only a subset of anchors.
+        :param use_anchors: list of indices to use, or None to use all.
+        """
+        if use_anchors is None:
+            remove_anchors = {}
+        else:
+            all_anchors = set(np.arange(self.K))
+            remove_anchors = all_anchors.difference(use_anchors)
+
+        self.W = np.zeros((self.K, self.N))
+        for i in range(measurements_per_time):
+            i_indices = np.mod(np.arange(self.N) + i, self.K)
+            self.W[i_indices, range(self.N)] = 1.0
+        self.W[list(remove_anchors), :] = 0.0
+
+        self.prune()
+
     def random_traj_init(self, regularization, sigma_acc_est=SIGMA_ACC_EST):
-        traj, vel, __ = generate_random_trajectory(
-            self.N, self.d, v_sigma=sigma_acc_est, return_velocities=True
+        traj, vel = generate_random_trajectory(
+            self.N, self.d, self.times, v_sigma=sigma_acc_est, return_velocities=True
         )
         if regularization == "constant-velocity":
             return np.c_[traj, vel]
         return traj
 
-    def random_init(self, regularization, sigma_acc_est=SIGMA_ACC_EST):
+    def random_init(self, regularization):
         if regularization == "constant-velocity":
             k = 2 * self.d
         else:
@@ -329,10 +385,41 @@ class Problem(object):
             D_noisy = np.sqrt(D_noisy)
         biases = np.empty(D_noisy.shape[0])
         for i in range(D_noisy.shape[0]):
-            indices = D_noisy[i, :] > 0
+            indices = D_noisy[i, :] > 0  # only consider existing distances
             D_real = generate_distances(self.trajectory[indices, :], self.anchors[[i]])
             biases[i] = np.mean(D_noisy[i, indices] - D_real)
         return np.array(biases).flatten()
+
+    def get_Jm(self, m, k, theta_est):
+        """Calculate Jacobian"""
+        Jm = 2 * (self.anchors - theta_est[m, : self.d][None, :])  # (M x d)
+        Jm_aug = np.c_[Jm, np.zeros((Jm.shape[0], k - self.d))]  # M x K
+        assert Jm_aug.shape == (self.K, k)
+        return Jm_aug
+
+    def get_em(self, m, theta_est):
+        """Calculate error vector"""
+        em = self.W[:, m] * (
+            self.D_noisy[:, m]  # already squared
+            - norm(self.anchors - theta_est[m, : self.d][None, :], axis=1) ** 2
+        )  # M
+        return em
+
+    def get_em_hess(self, n, theta):
+        r"""Get the non-linear contribution to the gradient:
+
+        .. math::
+            \sum_{m=1}^{M_n} \nabla^2 e_{nm} (\Sigma^{-1}_n \mathbf{e}_n)_m
+        """
+        # need the r" above to avoid warning
+
+        k = theta.shape[1]
+        hess = np.zeros((k, k))
+
+        errors = self.Sig_inv @ self.get_em(n, theta)
+        for m in range(self.K):
+            hess[range(self.d), range(self.d)] += -2 * errors[m]
+        return hess
 
     def get_Q_matrices(self, m, dim):
         """Compute m-th component of Q matrices: Q_mm, q_m, and the m-th element of q
@@ -350,9 +437,9 @@ class Problem(object):
             # print("Warning: no measurement at time:", m, self.W[:, m])
             return Q_mm, q_m, 0.0
 
-        Q_n = np.c_[2 * self.anchors[nnz], -np.ones(len(nnz))]
-        Sig_inv_n = self.Sig_inv[np.ix_(nnz, nnz)]
+        Sig_inv_n = self.Sig_inv[nnz, :][:, nnz]
 
+        Q_n = np.c_[2 * self.anchors[nnz], -np.ones(len(nnz))]
         Q_mm[np.ix_(list(range(self.d)) + [-1], list(range(self.d)) + [-1])] = (
             Q_n.T @ Sig_inv_n @ Q_n
         )
@@ -376,31 +463,40 @@ class Problem(object):
         # print("Q_inv:", self.Q_inv)
         return get_Qi_inv(self.Q_inv, dt, regularization)
 
-    def get_R_nn(self, n, dim, regularization):
+    def get_R_nn(self, n, dim, regularization, verbose=False):
         R_nn = np.zeros((dim, dim))
         if n == 0:
-            Q_inv_m = self.get_Q_inv(1, regularization=regularization)
-            phi_m = self.get_phi(1, regularization=regularization)
+            # phi_12 @ Q_2 @ phi_21
+            Q_inv_m = self.get_Q_inv(n + 1, regularization=regularization)
+            phi_m = self.get_phi(n + 1, regularization=regularization)
+            if verbose:
+                print(f"R_nn: phi_{n,n+1} Q_{n+1} phi_{n, n+1}")
             R_nn[: phi_m.shape[1], : phi_m.shape[1]] = phi_m.T @ Q_inv_m @ phi_m
         elif n <= self.N - 2:
+            # Q_2 + phi_23 @ Q_3 @ phi_32
+            # etc.
             Q_inv_n = self.get_Q_inv(n, regularization=regularization)
             Q_inv_m = self.get_Q_inv(n + 1, regularization=regularization)
             phi_m = self.get_phi(n + 1, regularization=regularization)
+            if verbose: 
+                print(f"R_nn: Q_{n} + phi_{n,n+1} Q_{n+1} phi_{n, n+1}")
             R_nn[: phi_m.shape[1], : phi_m.shape[1]] = (
                 Q_inv_n + phi_m.T @ Q_inv_m @ phi_m
             )
         elif n == self.N - 1:
+            # Q_N
             Q_inv_n = self.get_Q_inv(n, regularization=regularization)
             R_nn[: Q_inv_n.shape[0], : Q_inv_n.shape[1]] = Q_inv_n
         return R_nn / self.N
 
     def get_R_nm(self, m, dim, regularization):
+        """returns the element R_{m-1, m}"""
+        assert m > 0
         R_nm = np.zeros((dim, dim))
         Q_inv_m = self.get_Q_inv(m, regularization=regularization)
         phi_m = self.get_phi(m, regularization=regularization)
-        R_nm[: phi_m.shape[1], : phi_m.shape[1]] = (
-            -phi_m.T @ Q_inv_m
-        )  # -phi_12.T @ Q_2, upper right
+        R_nm[: phi_m.shape[1], : phi_m.shape[1]] = -phi_m.T @ Q_inv_m
+        # -phi_12.T @ Q_2
         return R_nm / self.N
 
     def get_R_matrices(self, m, dim, regularization):
@@ -409,10 +505,7 @@ class Problem(object):
         - at n=0, the function returns the first element, R_00
             this becomes R_nn in the outer loop.
         - at time n==1, the function returns R_mm=R_11 and R_nm=R_01.
-            we fill the first clique with R_mm, R_nn, R_nm.
-            the new value becomes R_mm.
-
-        at time n==N-1, the function returns R_{N-1,N-1}
+        - at time n==N-1, the function returns R_{N-1,N-1}
         """
         R_mm = self.get_R_nn(m, dim, regularization)
         if m < self.N - 1:
@@ -420,3 +513,48 @@ class Problem(object):
         else:
             R_nm = None
         return R_mm, R_nm
+
+    def __repr__(self):
+        outstr = "Problem with parameters:\n"
+        outstr += f"{self.N, self.K, self.d}\n"
+        outstr += f"Sig_inv[0,0] (distance covariance):{self.Sig_inv[0, 0]:.1f}\n"
+        outstr += f"Q_inv[0,0] (motion covariance): {self.Q_inv[0, 0]:.1f}"
+        return outstr
+
+    # polymat stuff
+    def get_xvar(self):
+        return [f"x{i}" for i in range(self.N)]
+
+    def get_zvar(self):
+        return [f"z{i}" for i in range(self.N)]
+
+    def get_var_dict(self, regularization):
+        k = self.get_dim(regularization)
+        var_dict = {key: k for key in self.get_xvar()}
+        var_dict.update({key: 1 for key in self.get_zvar()})
+        return var_dict
+
+    def plot(self, ax=None, show=True):
+        if ax is None:
+            fig, ax = plt.subplots()
+        else:
+            fig = plt.gcf()
+
+        if self.anchors is not None:
+            ax.scatter(*self.anchors.T, color="k", marker="x", label="anchors")
+
+        if self.trajectory is not None:
+            ax.scatter(*self.trajectory.T, color="k", marker="o", label="real")
+        ax.axis("equal")
+        if show:
+            plt.show()
+        return fig, ax
+
+    def plot_estimates(self, points_list, show=True, ax=None, **kwargs):
+        if ax is None:
+            fig, ax = self.plot(show=False)
+        for i, p in enumerate(points_list):
+            ax.plot(*p.T, marker=".", **kwargs)
+        ax.legend()
+        if show:
+            plt.show()

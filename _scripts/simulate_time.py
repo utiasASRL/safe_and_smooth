@@ -1,32 +1,20 @@
 import os
-import sys
 import time
 
 import numpy as np
 import pandas as pd
 
-from certificate import get_certificate
-from certificate import get_rho_and_lambdas
-from helper_params import parse_log_argument
-from gauss_newton import gauss_newton
-from problem import Problem
+from poly_certificate.certificate import get_certificate
+from poly_certificate.certificate import get_rho_and_lambdas
+from poly_certificate.gauss_newton import gauss_newton
+from poly_certificate.problem import Problem
 
-regularization = "constant-velocity"
+from utils.helper_params import parse_log_argument
 
-if __name__ == "__main__":
 
-    results_name = "simulation_time.pkl"
+def generate_results(fname, max_N):
+    regularization = "constant-velocity"
 
-    out_dir = "_results"
-    logging = parse_log_argument(description="Run timing experiments.")
-    if logging:
-        old_stdout = sys.stdout
-        logfile = os.path.join(out_dir, "simulate_time.log")
-        f = open(logfile, "w")
-        sys.stdout = f
-
-    fname = os.path.join(out_dir, results_name)
-    max_N = 6
     Ns = np.logspace(1, max_N, max_N * 2 - 1).astype(int)
 
     print("generating Ns:", Ns)
@@ -83,6 +71,16 @@ if __name__ == "__main__":
         print("saved as", fname)
     print("done")
 
-    if logging:
-        sys.stdout = old_stdout
-        f.close()
+
+if __name__ == "__main__":
+    max_N = 6 # set to 6 for complete study
+
+    from utils.helper_params import logs_to_file
+    out_dir = "_results"
+    logging = parse_log_argument(description="Run timing experiments.")
+    results_name = "simulation_time"
+
+    logfile = os.path.join(out_dir, results_name)
+    with logs_to_file(logfile + ".log"):
+        fname = os.path.join(out_dir, results_name + ".pkl")
+        generate_results(fname, max_N=max_N)

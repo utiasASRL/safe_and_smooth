@@ -3,15 +3,12 @@ Gaussian Process interpolation tests (WIP)
 """
 
 import numpy as np
+import scipy as sp
+import scipy.sparse.linalg as spl
 
-import sys
-from os.path import dirname
-
-sys.path.append(dirname(__file__) + "/../")
-
-from gaussian_process import *
-from gauss_newton import gauss_newton
-from problem import Problem
+from poly_certificate.gaussian_process import *
+from poly_certificate.gauss_newton import gauss_newton, setup_gp
+from poly_certificate.problem import Problem
 
 
 def test_query():
@@ -50,9 +47,6 @@ def test_covariances():
     prob = Problem(N=N, K=K, d=d)
     prob.generate_random()
 
-    from gauss_newton import setup_gp
-    import scipy.sparse.linalg as spl
-
     regularization = "constant-velocity"
     k = 4
     A_inv, Q_inv, K_prior_inv, v = setup_gp(prob, regularization)
@@ -60,15 +54,6 @@ def test_covariances():
     np.testing.assert_allclose(
         (A_inv.T @ Q_inv @ A_inv).toarray(), K_prior_inv.toarray()
     )
-
-    K_prior_ii, K_prior_ij = get_prior_covariances(prob, regularization)
-
-    import scipy.sparse as sp
-
-    K_prior = spl.inv(K_prior_inv + 1e-3 * sp.identity(K_prior_inv.shape[0]))
-    for i in range(prob.N):
-        K_prior_ii_est = K_prior[i * k : (i + 1) * k, i * k : (i + 1) * k].toarray()
-        # np.testing.assert_allclose(K_prior_ii_est, K_prior_ii[i])
 
 
 if __name__ == "__main__":

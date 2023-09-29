@@ -1,15 +1,11 @@
-import sys
-from os.path import dirname
+import scipy.sparse as sp
+import numpy as np
 
-sys.path.append(dirname(__file__) + "/../")
-
-from sdp_setup import *
+from poly_certificate.sdp_setup import *
+from poly_certificate.problem import Problem
 
 
 def test_sdp_setup():
-    from problem import Problem
-    import scipy.sparse as sp
-
     tol = 1e-10
 
     mat = np.arange(9).reshape((3, 3)).astype(float)

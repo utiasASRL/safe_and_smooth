@@ -1,11 +1,6 @@
 import numpy as np
 
-import sys
-from os.path import dirname
-
-sys.path.append(dirname(__file__) + "/../")
-
-from decompositions import *
+from poly_certificate.decompositions import *
 
 
 def get_random_A(N, k, psd=True, arrowhead=False, sparse=False):
