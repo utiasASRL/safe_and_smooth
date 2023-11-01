@@ -1,0 +1,15 @@
+name: safe_and_smooth
+channels:
+    - defaults
+    - conda-forge
+    - anaconda
+    - mosek
+
+dependencies:
+    - python=3.10
+    - pip=22.3
+
+    - pip:
+      - -r requirements.txt
+      - -e poly_matrix # build local poly_matrix submodule
+      - -e .  # build local lifting package
