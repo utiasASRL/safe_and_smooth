@@ -1,5 +1,7 @@
 # Safe and Smooth: Certified Continuous-Time Range-Only Localization
 
+[![Python application](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-app.yml/badge.svg)](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-app.yml)
+
 This repository contains the code to reproduce all results of the paper:
 
 ````

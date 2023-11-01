@@ -1,11 +1,10 @@
 import numpy as np
 
-import sys
-from os.path import dirname
+from poly_certificate.problem import Problem
+from poly_certificate.sdp_setup import get_prob_matrices, get_H
+from poly_certificate.certificate import get_block_matrices
+from poly_certificate.problem import reflect_points
 
-sys.path.append(dirname(__file__) + "/../")
-
-from problem import Problem
 
 # time_range = [0, 50]
 time_range = None
@@ -59,8 +58,6 @@ def test_calibrate():
 
 
 def test_blocks():
-    from sdp_setup import get_prob_matrices, get_H
-    from certificate import get_block_matrices
 
     np.random.seed(0)
     regularization = "constant-velocity"
@@ -101,7 +98,6 @@ def test_blocks():
 
 
 def test_reflect_points():
-    from problem import reflect_points
 
     anchors = np.c_[[3, -3, 3], [-3, -3, 3], [-3, 3, 3], [3, 3, 3]]  # d x M
     points = np.c_[
@@ -130,7 +126,7 @@ def test_reflect_points():
 
 
 if __name__ == "__main__":
-    # test_calibrate()
+    test_calibrate()
     test_blocks()
     test_reflect_points()
     print("all tests passed")

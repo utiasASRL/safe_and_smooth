@@ -166,14 +166,15 @@ def tri_block_ldl(
     """
     Returns the block-ldl-decompositions
     :return:
-        - D_ii, J_ii, L_ij if h_i_list, h are not given
-        - D_ii, J_ii, L_ij, l_i_list, l if h_i_list, h are given
-        - None if the decomposition doesn't exist (matrix is not p.s.d.)
+        - D_ii, J_ii, L_ij if h_i_list, h, status are not given
+        - D_ii, J_ii, L_ij, l_i_list, l, status if h_i_list, h are given
+        - None, status if the decomposition doesn't exist (matrix is not p.s.d.)
+    The last variable status is a string message with the status of the decomposition.
     """
     D_ii = []
     J_ii = []
     L_ij = []
-    status = ""
+    status = "success"  # overwritten if LDL fails
     for n, H_nn in enumerate(H_ii):
         if n == 0:
             J_nn, D_nn = ldl(H_nn, verbose=verbose, tol=tol)
@@ -181,8 +182,9 @@ def tri_block_ldl(
                 status = f"dense ldl failed at time {n}"
                 return None, status
 
-            if early_stopping and np.any(np.diag(D_nn) < -tol):
-                status = f"found zero diagonal element at time {n}: {np.diag(D_nn)}"
+            mask = np.diag(D_nn) < -tol
+            if early_stopping and np.any(mask):
+                status = f"found negative diagonal element at time {n}: {np.diag(D_nn)[mask]}"
                 return None, status
 
             D_ii.append(D_nn)
@@ -195,8 +197,9 @@ def tri_block_ldl(
                 status = f"dense ldl failed at time {n}"
                 return None, status
 
-            if early_stopping and np.any(np.diag(D_nn) < -tol):
-                status = f"found zero diagonal element at time {n}: {np.diag(D_nn)}"
+            mask = np.diag(D_nn) < -tol
+            if early_stopping and np.any(mask):
+                status = f"found negative diagonal element at time {n}: {np.diag(D_nn)[mask]}"
                 return None, status
 
             D_ii.append(D_nn)

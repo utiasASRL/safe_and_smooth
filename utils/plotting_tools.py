@@ -5,8 +5,6 @@ import numpy as np
 import matplotlib.pylab as plt
 import pandas as pd
 
-import seaborn as sns
-
 fn_tp_styles = {
     "t.p.": ("C2", "<"),  # green
     "t.n.": ("C0", ">"),  # blue
@@ -204,14 +202,16 @@ def plot_aligned(trajectory, anchors, trajectory_est, anchors_est, ax=None):
     ax.set_ylabel("y [m]")
 
 
-def plot_setup(trajectory, anchors):
-    fig, ax = plt.subplots()
-    fig.set_size_inches(5, 5)
-    ax.scatter(*trajectory[:, :2].T)
-    ax.scatter(*anchors[:, :2].T, color="C1")
+def plot_setup(trajectory, anchors, ax=None, **kwargs):
+    if ax is None:
+        fig, ax = plt.subplots()
+        fig.set_size_inches(5, 5)
+    ax.scatter(*trajectory[:, :2].T, **kwargs)
+    ax.scatter(*anchors[:, :2].T, color="k", marker="x")
     ax.axis("equal")
     ax.set_xlabel("x [m]")
     ax.set_ylabel("y [m]")
+    return ax
 
 
 def jitter(values):
@@ -232,7 +232,9 @@ def fill_fn_tp(row):
     return row
 
 
-def plot_cert_fn_tp(results, xlabel="sigma dist real", ylabel="rmse", ax=None, xticks=None, **kwargs):
+def plot_cert_fn_tp(
+    results, xlabel="sigma dist real", ylabel="rmse", ax=None, xticks=None, **kwargs
+):
     if not "result" in results.columns:
         results.loc[:, "result"] = ""
         results = results.apply(fill_fn_tp, axis=1)
@@ -315,8 +317,14 @@ def plot_3d_curves(
             ax = plt.add_subplot(1, 1, 1, projection="3d")
         for label, traj in trajs.items():
             kwargs = styles.get(label, {})
-            ax.scatter(traj[:, 0], traj[:, 1], traj[:, 2], label=label, 
-                       rasterized=True, **kwargs)
+            ax.scatter(
+                traj[:, 0],
+                traj[:, 1],
+                traj[:, 2],
+                label=label,
+                rasterized=True,
+                **kwargs,
+            )
 
         if anchors is not None:
             ax.scatter(

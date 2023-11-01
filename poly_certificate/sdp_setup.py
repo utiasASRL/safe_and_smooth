@@ -55,7 +55,7 @@ def get_R_matrix(prob, dim, total_dim, regularization):
                 sym=True,
             )
     assert counter == nnz, ("R", counter, nnz)
-    R = sp.csr_array((data, (I, J)), shape=(total_dim, total_dim))
+    R = sp.csc_array((data, (I, J)), shape=(total_dim, total_dim))
     return R
 
 
@@ -93,7 +93,7 @@ def get_A_inv(prob, regularization, reduced=True):
         )
         counter = fill_eye(dim, start_i + j, j + dim, I, J, data, counter)
     assert counter == nnz, (counter, nnz)
-    A_inv = sp.csr_array((data, (I, J)), shape=total_shape)
+    A_inv = sp.csc_array((data, (I, J)), shape=total_shape)
     return A_inv
 
 
@@ -102,7 +102,7 @@ def get_prob_matrices(prob, regularization):
 
     k = prob.get_dim(regularization)
     total_dim = prob.N * (k + 1) + 1
-    A_0 = sp.csr_array(
+    A_0 = sp.csc_array(
         ([1.0], ([total_dim - 1], [total_dim - 1])), shape=(total_dim, total_dim)
     )
 
@@ -120,7 +120,7 @@ def get_prob_matrices(prob, regularization):
         I_n = list(range(i, i + prob.d)) + [i + k] + [total_dim - 1]
         J_n = list(range(i, i + prob.d)) + [total_dim - 1] + [i + k]
         data_n = [1.0] * prob.d + [-0.5] * 2
-        A_n = sp.csr_array((data_n, (I_n, J_n)), shape=(total_dim, total_dim))
+        A_n = sp.csc_array((data_n, (I_n, J_n)), shape=(total_dim, total_dim))
         A_list.append(A_n)
 
         Q_nn, q_n, q_0n = prob.get_Q_matrices(n, dim=k + 1)
@@ -148,7 +148,7 @@ def get_prob_matrices(prob, regularization):
     counterq += 1
 
     assert counterq == qnnz, ("Q", counterq, qnnz)
-    Q = sp.csr_array((dataq, (Iq, Jq)), shape=(total_dim, total_dim))
+    Q = sp.csc_array((dataq, (Iq, Jq)), shape=(total_dim, total_dim))
     if regularization == "no":
         return Q, A_0, A_list, None
 
@@ -172,7 +172,9 @@ def get_H(Q_all, A_0, A_list, rho_est, lambdas_est):
     return H
 
 
+# TODO: replace with cert_matrix.get_original_f
 def get_f(x, dim=None):
+    print("get_f is deprecated, use cert_matrix.get_original_f instead.")
     if np.ndim(x) == 1:
         assert dim is not None
         X = x.reshape((-1, dim))  # N x d
