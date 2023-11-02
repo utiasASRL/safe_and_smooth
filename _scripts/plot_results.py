@@ -679,12 +679,12 @@ if __name__ == "__main__":
     from utils.helper_params import parse_arguments
 
     args = parse_arguments("Plot all results")
+    plot_real_top_calib(args.resultdir, args.plotdir)
 
     plot_noise(args.resultdir, args.plotdir)
     plot_timing(args.resultdir, args.plotdir)
 
     plot_real_top(args.resultdir, args.plotdir)
-    plot_real_top_calib(args.resultdir, args.plotdir)
     plot_real_top_estimate(args.resultdir, args.plotdir)
 
     plot_problem_setup(args.plotdir)

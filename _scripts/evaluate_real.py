@@ -168,11 +168,8 @@ if __name__ == "__main__":
     from utils.helper_params import logs_to_file, parse_arguments
 
     save_results = True
-    out_dir = "_results_final/"
-
     args = parse_arguments("Generate dataset results.")
-    if args.test:
-        out_dir = "_results/"
+    out_dir = args.resultdir
 
     logfile = os.path.join(out_dir, "evaluate_real.log")
     with logs_to_file(logfile):

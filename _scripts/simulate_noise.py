@@ -177,8 +177,8 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False)
             if save_results:
                 results.to_pickle(fname)
                 print("saved intermediate as", fname)
-    if test:
-        plt.show()
+    # if test:
+    #    plt.show()
     return results
 
 

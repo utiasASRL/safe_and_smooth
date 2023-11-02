@@ -14,7 +14,7 @@ A pre-print is available at [https://arxiv.org/abs/2209.04266](https://arxiv.org
 
 ## Installation
 
-This code was written for Ubuntu 20.04.5, using Python 3.8.10.
+This code was last tested with Ubuntu 20.04.1, using Python 3.10.3
 
 ### Local install
 
@@ -26,13 +26,18 @@ git clone --recursive git@github.com:utiasASRL/safe_and_smooth
 All requirements can be installed by running
 ```
 conda env create -f environment.yml
-conda activate safeandsmooth
 ```
 
 To check that the installation was successful, run
 ```
+conda activate safeandsmooth
 pytest .
 ```
+You can also check that you can generate some toy example results by running
+```
+_scripts/generate_test_results.sh
+```
+and then checking the output created in `_plots_test`. 
 
 Please report any installation issues. 
 
@@ -40,15 +45,15 @@ Please report any installation issues.
 
 There are three types of results reported in the paper:
 
-- Noise study: Run `simulate_noise.py` to generate the simulation study (Figures 4 and 7 (appendix)). 
-- Timing study:  Run `simulate_time.py` to generate the runtime comparison (Figure 5)
-- Real data: Run `evaluate_data.py` to evaluate the real dataset (Figures 1, 5 and 6). 
+- Noise study: Run `_scripts/simulate_noise.py` to generate the simulation study (Figures 4 and 7 (appendix)). 
+- Timing study:  Run `_scripts/simulate_time.py` to generate the runtime comparison (Figure 5)
+- Real data: Run `_scripts/evaluate_real.py` to evaluate the real dataset (Figures 1, 5 and 6). 
 
 You can generate all results by running
 ```
 _scripts/generate_all_results.sh
 ```
-After generating, all data can be evaluated, and new figures created, using the jupyter notebook `SafeAndSmooth.ipynb`. For more evaluations of the real dataset, refer to the notebook `DatasetEvaluation.ipynb`. 
+After generating, all data can be evaluated, and new figures created, by running `python _scripts/plot_results.py`. For more evaluations of the real dataset, refer to the notebook `_notebooks/DatasetEvaluation.ipynb` (you may need to run `pip install -r requirements.txt` for additional plotting libraries). 
 
 ## Code references
 

@@ -80,7 +80,7 @@ def parse_arguments(description=""):
         "-r",
         "--resultdir",
         help="directory of results",
-        default="_results",
+        default="_results_test",
     )
     parser.add_argument(
         "-p",
