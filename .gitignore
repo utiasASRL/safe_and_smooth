@@ -6,6 +6,7 @@ __pycache__/
 *.egg-info/
 
 _plots/
+_plots_test/
 _data/
 _results/*.log
 _results/**/*.pkl

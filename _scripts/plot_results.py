@@ -28,13 +28,9 @@ plt.rcParams.update(
 plt.rc("text.latex", preamble=r"\usepackage{bm}\usepackage{color}")
 figsize = 7
 
-outdir = "_results/"
-# outdir = "_results_final/"
-# outdir = "_results_server/"
-
 
 # Problem setup
-def plot_problem_setup():
+def plot_problem_setup(plotdir):
     # N = 100
     N = 3
     d = 3
@@ -89,11 +85,11 @@ def plot_problem_setup():
     axs[3].yaxis.set_label_coords(1.15, 0)
     [ax.yaxis.set_ticks_position("none") for ax in axs]
     [ax.xaxis.set_ticks_position("none") for ax in axs]
-    savefig(fig, f"_plots/Q_all.pdf")
+    savefig(fig, os.path.join(plotdir, "Q_all.pdf"))
 
 
 # Certificate study with fixed N, increasing noise
-def plot_noise():
+def plot_noise(outdir, plotdir):
     def remove_invalid_rows(results, verbose=False):
         """For very few noise levels and setup seeds, all initializations lead to local minima,
         accoding to the certificate.
@@ -121,7 +117,7 @@ def plot_noise():
         return results.drop(index=remove_index, inplace=False)
 
     name = "simulation_noise"
-    fname = outdir + name + "/results.pkl"
+    fname = os.path.join(outdir, name, "results.pkl")
     try:
         results = pd.read_pickle(fname)
         print("read", fname)
@@ -185,8 +181,8 @@ def plot_noise():
     fig_bin.tight_layout()
     fig_bin.subplots_adjust(wspace=0.1)
 
-    savefig(fig_bin, f"_plots/{name}.pdf")
-    savefig(fig_bin, f"_plots/{name}.jpg")
+    savefig(fig_bin, os.path.join(plotdir, f"{name}.pdf"))
+    savefig(fig_bin, os.path.join(plotdir, f"{name}.jpg"))
 
     params = load_parameters(name, outdir)
     regularization = "constant-velocity"
@@ -223,7 +219,7 @@ def plot_noise():
         n_local_sol = len(df_[df_.solution == "local"])
         n_global_sol = len(df_[df_.solution == "global"])
 
-        print(f"found {n_local_sol} local solutions for", n_it)
+        print(f"found {n_local_sol} local solutions for setup", n_it)
         if n_local_sol == 1:
             continue
 
@@ -260,7 +256,7 @@ def plot_noise():
         assert row["cert value"] >= 0
 
         np.random.seed(row["init seed"])
-        theta_0 = prob.random_init(regularization)
+        theta_0 = prob.random_traj_init(regularization)
         theta_est, stats = gauss_newton(theta_0, prob, regularization=regularization)
 
         axs[0, counter].plot(
@@ -317,17 +313,17 @@ def plot_noise():
     )
     # leg.get_frame().set_facecolor("lightgray")
     leg.get_frame().set_edgecolor("lightgray")
-    savefig(fig, "_plots/local_minimum_sim.pdf")
+    savefig(fig, os.path.join(plotdir, "local_minimum_sim.pdf"))
 
 
-def plot_timing():
+def plot_timing(outdir, plotdir):
     labels = {
         "solve": "solve (GN)",
         "duals": "compute dual variables",
         "certificate": "compute certificate",
     }
     try:
-        fname = f"{outdir}/simulation_time.pkl"
+        fname = os.path.join(outdir, "simulation_time.pkl")
         results = pd.read_pickle(fname)
 
         fig, ax = plt.subplots()
@@ -347,13 +343,13 @@ def plot_timing():
         ax.set_yticklabels([f"$10^{{{np.log10(y):.0f}}}$" for y in yticks])
         ax.set_ylabel("runtime [s]", fontsize=12)
         ax.set_xlabel("number of positions $N$", fontsize=12)
-        savefig(fig, "_plots/certificates_timing.pdf")
+        savefig(fig, os.path.join(plotdir, "certificates_timing.pdf"))
     except Exception as e:
         print(e)
         print(f"{fname} not found, generate with simulate_time.py")
 
 
-def plot_real_top_estimate():
+def plot_real_top_estimate(outdir, plotdir):
     name = "real_top_estimate"
     fname = os.path.join(outdir, name, "results.pkl")
     results = pd.read_pickle(fname)
@@ -403,10 +399,10 @@ def plot_real_top_estimate():
             ncol=3, bbox_to_anchor=[-0.2, 0.05], loc="upper center", fontsize=12
         )
         # fig3d.subplots_adjust(wspace=0.1)
-        savefig(fig3d, f"_plots/real_certificate_{dataset}.pdf")
+        savefig(fig3d, os.path.join(plotdir, f"real_certificate_{dataset}.pdf"))
 
 
-def plot_real_top():
+def plot_real_top(outdir, plotdir):
     name = "real_top"
     fname = os.path.join(outdir, name, "results.pkl")
     # fname = "_results_server/real_top/results.pkl"
@@ -476,10 +472,10 @@ def plot_real_top():
         return fig
 
     fig = plot_rmse_cost(results)
-    savefig(fig, "_plots/real-cost-rmse.pdf")
+    savefig(fig, os.path.join(plotdir, "real-cost-rmse.pdf"))
 
 
-def plot_real_top_calib():
+def plot_real_top_calib(outdir, plotdir):
     name = "real_top_calib"
     fname = os.path.join(outdir, name, "results.pkl")
     results = pd.read_pickle(fname)
@@ -555,7 +551,6 @@ def plot_real_top_calib():
                     "MAE": row.MAE,
                     "RMSE": row["RMSE unbiased"],
                 }
-                # xlabel = row.RMSE
                 if j == 0:
                     label = "\n".join([li + f" {vi:.2f}m" for li, vi in labels.items()])
                     print(label)
@@ -595,7 +590,7 @@ def plot_real_top_calib():
         0.54, 1.08, regularization[1] + " prior ($\\sigma_a$ in m/s$^{2}$)", fontsize=12
     )  # ,color="C1")
     # savefig(fig, "_plots/real-solutions.jpg")
-    savefig(fig, "_plots/real-solutions.pdf")
+    savefig(fig, os.path.join(plotdir, "real-solutions.pdf"))
 
     results
     datasets = results.dataset.unique()
@@ -673,18 +668,23 @@ def plot_real_top_calib():
     ax.legend(**legends[1], bbox_to_anchor=[1.0, 0.0], loc="lower right", **kwargs)
     ax.add_artist(leg)
     plt.minorticks_off()
-    savefig(fig, "_plots/real-analysis.pdf")
-    savefig(fig, "_plots/real-analysis.jpg")
+    savefig(fig, os.path.join(plotdir, "real-analysis.pdf"))
+    savefig(fig, os.path.join(plotdir, "real-analysis.jpg"))
 
     for key, val in times.items():
         print(f"average time for {key} (reduced dataset): {np.mean(val):.2f}s")
 
 
 if __name__ == "__main__":
-    plot_problem_setup()
-    plot_noise()
-    plot_timing()
+    from utils.helper_params import parse_arguments
 
-    plot_real_top()
-    plot_real_top_calib()
-    plot_real_top_estimate()
+    args = parse_arguments("Plot all results")
+
+    plot_noise(args.resultdir, args.plotdir)
+    plot_timing(args.resultdir, args.plotdir)
+
+    plot_real_top(args.resultdir, args.plotdir)
+    plot_real_top_calib(args.resultdir, args.plotdir)
+    plot_real_top_estimate(args.resultdir, args.plotdir)
+
+    plot_problem_setup(args.plotdir)

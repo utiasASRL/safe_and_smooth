@@ -76,5 +76,17 @@ def parse_arguments(description=""):
         action="store_true",
         default=False,
     )
+    parser.add_argument(
+        "-r",
+        "--resultdir",
+        help="directory of results",
+        default="_results",
+    )
+    parser.add_argument(
+        "-p",
+        "--plotdir",
+        help="directory for plots",
+        default="_plots_test",
+    )
     args = parser.parse_args()
     return args
