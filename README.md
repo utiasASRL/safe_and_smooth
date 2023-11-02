@@ -1,6 +1,6 @@
 # Safe and Smooth: Certified Continuous-Time Range-Only Localization
 
-[![Python application](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml)
+[![Python Package using Conda](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml)
 
 This repository contains the code to reproduce all results of the paper:
 
