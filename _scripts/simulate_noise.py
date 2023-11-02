@@ -29,38 +29,31 @@ REG = 1e-10
 SAVE_RESULTS = True
 
 
-def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
-
+def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False):
     params = load_parameters(params_dir, out_dir)
     fname = os.path.join(out_dir, params_dir, "results.pkl")
 
     n_inits = params["init_seed"]
     n_setups = params["setup_seed"]
+
+    sigma_acc_est_list = params["sigma_acc_est"]
+    sigma_dist_real_list = params["sigma_dist_real"]
+    if test:
+        n_inits = min(n_inits, 3)
+        n_setups = min(n_setups, 10)
+        sigma_dist_real_list = sigma_dist_real_list[:3]
+        sigma_acc_est_list = sigma_acc_est_list[:3]
+
     init_seeds = np.arange(n_inits)
     setup_seeds = np.arange(n_setups)
 
-    results_columns = [
-        "setup seed",
-        "init seed",
-        "noise",
-        "error",
-        "regularization",
-        "sigma acc est",
-        "sigma dist real",
-        "cert value",
-        "cost",
-        "rho",
-        "time",
-    ]
-
-    # n_results = len(noises) * len(n_its) * n_starts
-    results = pd.DataFrame(columns=results_columns)
+    dfs = []
     for regularization in params["regularization"]:
         if VERBOSE > 0:
             print(f"----- regularization: {regularization} ------")
 
         for sigma_acc_est, sigma_dist_real in itertools.product(
-            params["sigma_acc_est"], params["sigma_dist_real"]
+            sigma_acc_est_list, sigma_dist_real_list
         ):
             if VERBOSE > 0:
                 print(
@@ -69,6 +62,7 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                 p = progressbar.ProgressBar(max_value=n_setups)
 
             for i, setup_seed in enumerate(setup_seeds):
+                data = []
                 sigma_dist_est = (
                     params["sigma_dist_est"]
                     if params["sigma_dist_est"] is not None
@@ -88,11 +82,7 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                 )
                 noise_realization = prob.calculate_noise_level()
 
-                results_here = pd.DataFrame(
-                    index=range(n_inits), columns=results_columns
-                )
                 for init_seed in init_seeds:
-
                     np.random.seed(init_seed)
                     theta_0 = prob.random_traj_init(regularization)
 
@@ -117,7 +107,6 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                         "time": None,
                     }
                     if stats["success"]:
-
                         trajectory_est = theta_est[:, : prob.d]
                         cost = stats["cost"]
 
@@ -154,13 +143,17 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                         print(
                             f"\n GN did not converge at noise level: {sigma_dist_real}"
                         )
-                    results_here.loc[init_seed, :] = result_dict
+
+                    result_dict["init_seed"] = init_seed
+                    data.append(result_dict.copy())
 
                 p.update(i + 1)
                 # endfor inits
 
                 # label global vs. local errors.
+                results_here = pd.DataFrame(data)
                 min_cost = results_here.cost.min()
+                results_here["solution"] = ""
                 rel_error = (results_here.cost - min_cost) / min_cost
                 results_here.loc[
                     rel_error < TOL_GLOBAL,
@@ -170,8 +163,9 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                     rel_error >= TOL_GLOBAL,
                     "solution",
                 ] = "local"
-                results = pd.concat([results, results_here], ignore_index=True)
 
+                dfs.append(results_here)
+            results = pd.concat(dfs, ignore_index=True)
             # endfor it
             if save_results:
                 results.to_pickle(fname)
@@ -180,11 +174,16 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
 
 
 if __name__ == "__main__":
-    from utils.helper_params import logs_to_file
+    from utils.helper_params import logs_to_file, parse_arguments
 
-    out_dir = "_results/"
+    args = parse_arguments("Run noise simulation.")
+
+    out_dir = "_results_final/"
+    if args.test:
+        out_dir = "_results/"
+
     logfile = os.path.join(out_dir, "simulation_noise.log")
     with logs_to_file(logfile):
         params_dir = "simulation_noise/"
         print(f"Running experiment {params_dir}")
-        generate_results(params_dir, out_dir=out_dir)
+        generate_results(params_dir, out_dir=out_dir, test=args.test)

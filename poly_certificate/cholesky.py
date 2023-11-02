@@ -1,9 +1,9 @@
 import scipy.sparse as sp
 import numpy as np
 
-from cvxopt.lapack import potrf, sytrf, pbtrf
+from cvxopt.lapack import potrf, sytrf
 from cvxopt import matrix, spmatrix
-from cvxopt.cholmod import linsolve, splinsolve, options, symbolic, numeric, spsolve
+from cvxopt.cholmod import options, symbolic, numeric, spsolve
 
 methods = {"ldl": 0, "ll": 2}  # LDL using simplical,  # LL using supernodal
 
@@ -42,10 +42,10 @@ def general_solve(A, method="ldl"):
 
 def dense_compute_cholesky(A):
     try:
-        ## general matrix:
+        # general matrix:
         potrf(A, uplo="L")
 
-        ## band matrix:
+        # band matrix:
         # pbtrf(A, uplo="L")
 
         # on exit, A contains L in lower-triangular part.

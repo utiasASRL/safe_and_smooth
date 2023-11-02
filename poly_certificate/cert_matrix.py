@@ -3,7 +3,6 @@ import numpy as np
 from poly_matrix.poly_matrix import PolyMatrix
 
 from poly_certificate.sdp_setup import get_prob_matrices, get_H
-from poly_certificate.problem import Problem
 
 
 def get_centered_f(theta_est):
@@ -30,7 +29,6 @@ def get_original_f(theta_est):
 
 
 def get_original_old_matrix(prob, rho, lamdas, regularization):
-
     Q, A_0_list, A_list, R = get_prob_matrices(prob, regularization=regularization)
     if R is not None:
         Q += R
@@ -79,7 +77,6 @@ def get_centered_matrix(prob, theta_est, lamdas, regularization, test_jac=False)
     Hessian = PolyMatrix()
     Others = PolyMatrix()
     for m in range(prob.N):
-
         # Measurement cost
         J_m = prob.get_Jm(m, k, theta_est)  # M x d
 

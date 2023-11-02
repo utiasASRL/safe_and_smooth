@@ -9,25 +9,8 @@ from poly_certificate.cert_matrix import get_centered_matrix_blocks, get_hessian
 from poly_certificate.decompositions import tri_block_ldl
 from poly_certificate.sdp_setup import get_prob_matrices, get_H
 
-REG = 1e-3  # tolerance for p.s.d.-ness. if minimum eigenvalue is more than -REG, it is considered still p.s.d
-
-
-def chompack_cholesky(A):
-    from cvxopt import spmatrix, amd
-    from chompack import symbolic, cspmatrix, cholesky
-
-    # generate sparse matrix and compute symbolic factorization
-    # I = [0, 1, 3, 1, 5, 2, 6, 3, 4, 5, 4, 5, 6, 5, 6]
-    # J = [0, 0, 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 5, 6]
-    # A = spmatrix([0.1*(i+1) for i in range(15)], I, J, (7,7)) + spmatrix(10.0,range(7),range(7))
-    symb = symbolic(A, p=amd.order)
-
-    # create cspmatrix
-    L = cspmatrix(symb)
-    L += A
-
-    # compute numeric factorization
-    cholesky(L)
+# tolerance for p.s.d.-ness. if minimum eigenvalue is more than -REG, it is considered still p.s.d
+REG = 1e-3
 
 
 def get_rho_and_lambdas(theta_est, prob, regularization):
@@ -106,7 +89,6 @@ def get_centered_certificate(
     method="lanczos",
     return_time=False,
 ):
-
     xvar = prob.get_xvar()
     zvar = prob.get_zvar()
     var_dict = prob.get_var_dict(regularization)
@@ -146,8 +128,9 @@ def get_centered_certificate(
 
         try:
             from sksparse.cholmod import cholesky, CholmodNotPositiveDefiniteError
+
             solve = cholesky(Hess_sparse)
-        except:
+        except Exception:
             solve = spl.factorized(Hess_sparse)
         lin_op = spl.LinearOperator(shape=B_sparse.shape, matvec=matvec)
 
@@ -198,26 +181,19 @@ def get_mineig_sparse(H, v0=None, method="scipy", strategy="LA"):
     if method == "scipy":
         package = spl
         kwargs = dict(k=1, return_eigenvectors=False, which=strategy, v0=v0)
-    elif method == "primme":
-        import primme
-
-        package = primme
-        kwargs = dict(k=1, return_eigenvectors=False, which=strategy)
     else:
         raise ValueError(method)
 
     try:
         if strategy == "LA":
             eig_max = package.eigsh(H, **kwargs)[0]
-            H_inv = (
-                sp.csr_array(
-                    (
-                        np.full(H.shape[0], 2 * eig_max),
-                        ((np.arange(H.shape[0]), np.arange(H.shape[0]))),
-                    )
+            H_inv = sp.csr_array(
+                (
+                    np.full(H.shape[0], 2 * eig_max),
+                    ((np.arange(H.shape[0]), np.arange(H.shape[0]))),
                 )
-                - H
             )
+            H_inv -= H
             # l_inv = 2*l_max - l
             eigs = package.eigsh(H_inv, **kwargs)
             return 2 * eig_max - eigs[0]
@@ -234,14 +210,12 @@ def get_mineig_sparse(H, v0=None, method="scipy", strategy="LA"):
 def get_minimum_eigenvalue(
     prob, rho, lamdas, regularization, use_sparse=False, verbose=False, return_all=False
 ):
-
     Q, A_0_list, A_list, R = get_prob_matrices(prob, regularization=regularization)
     if R is not None:
         Q += R
 
     H = get_H(Q, A_0_list, A_list, rho, lamdas)
     if use_sparse:
-
         try:
             cert = get_mineig_sparse(H)
         except Exception as e:
