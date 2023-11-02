@@ -10,8 +10,9 @@ dependencies:
     - jupyter
     - seaborn>=0.12.2
     - numpy>=1.23.5
-    - scipy>=1.9.0
+    - scipy==1.10.0
     - pandas>=1.4.3
+    - plotly>=5.18.0
     - progressbar2==4.0
     - pyyaml>=6.0
     - pytest>=7.1.2
