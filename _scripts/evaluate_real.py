@@ -1,7 +1,7 @@
-""" Evaluate range-only drone localization dataset. 
+""" Evaluate range-only drone localization dataset.
 
-This code requires access to the drone UWB dataset referred to in [1]. 
-While waiting for the dataset to be published, please contact the authors to get access. 
+This code requires access to the drone UWB dataset referred to in [1].
+While waiting for the dataset to be published, please contact the authors to get access.
 
 """
 import itertools
@@ -23,7 +23,9 @@ from utils.helper_params import load_parameters
 DEFAULT_FILE = "default_real.json"
 
 
-def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
+def evaluate_datasets(
+    params_dir, out_dir, save_results=True, calibrate=True, test=False
+):
     """
     Detect local minima using a subset of anchors and
     a fixed regularization parameter.
@@ -34,13 +36,17 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
     fname = os.path.join(out_dir, params_dir, "results.pkl")
     params = load_parameters(params_dir, out_dir, default_file=DEFAULT_FILE)
 
+    datasets = params["datasets"]
+    if test:
+        datasets = datasets[:3]
+
     # do not change:
     use_gt = False
     n_random = 1
 
     data = []
-    for dataset_i in params["datasets"]:
-        if type(dataset_i) == int:
+    for dataset_i in datasets:
+        if type(dataset_i) is int:
             dataset = f"trial{dataset_i}"
         else:
             dataset = dataset_i
@@ -69,7 +75,6 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
                     for n in range(n_init):
                         print(f"{init} {n+1}/{n_init}")
                         np.random.seed(n)
-
 
                         results_dict = {
                             "dataset": dataset,
@@ -125,19 +130,21 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
                         traj_hat = theta_est[:, : prob.d]
                         rmse = prob.get_rmse(traj_hat)
 
-                        results_dict.update({
-                            "RMSE": rmse,
-                            "MAE": prob.get_mae(traj_hat),
-                            "RMSE unbiased": prob.get_rmse_unbiased(traj_hat),
-                            "error_xyz": prob.get_mean_error_xyz(traj_hat),
-                            "var_xyz": prob.get_var_error_xyz(traj_hat),
-                            "cert": cert,
-                            "cost": stats["cost"],
-                            "cost data": stats["cost dist"],
-                            "cost prior": stats["cost reg"],
-                            "time solve": stats["time"],
-                            "time cert": time_cert,
-                        })
+                        results_dict.update(
+                            {
+                                "RMSE": rmse,
+                                "MAE": prob.get_mae(traj_hat),
+                                "RMSE unbiased": prob.get_rmse_unbiased(traj_hat),
+                                "error_xyz": prob.get_mean_error_xyz(traj_hat),
+                                "var_xyz": prob.get_var_error_xyz(traj_hat),
+                                "cert": cert,
+                                "cost": stats["cost"],
+                                "cost data": stats["cost dist"],
+                                "cost prior": stats["cost reg"],
+                                "time solve": stats["time"],
+                                "time cert": time_cert,
+                            }
+                        )
                         if params["save_estimate"]:
                             results_dict.update(
                                 {
@@ -158,20 +165,40 @@ def evaluate_datasets(params_dir, out_dir, save_results=True, calibrate=True):
 
 
 if __name__ == "__main__":
-    import sys
+    from utils.helper_params import logs_to_file, parse_arguments
 
     save_results = True
-    out_dir = "_results_new/"
+    out_dir = "_results_final/"
 
-    from utils.helper_params import logs_to_file 
+    args = parse_arguments("Generate dataset results.")
+    if args.test:
+        out_dir = "_results/"
+
     logfile = os.path.join(out_dir, "evaluate_real.log")
     with logs_to_file(logfile):
-
         params_dir = "real_top_estimate/"
-        evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
+        evaluate_datasets(
+            params_dir,
+            out_dir,
+            calibrate=True,
+            save_results=save_results,
+            test=args.test,
+        )
 
         params_dir = "real_top_calib/"
-        evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
+        evaluate_datasets(
+            params_dir,
+            out_dir,
+            calibrate=True,
+            save_results=save_results,
+            test=args.test,
+        )
 
         params_dir = "real_top/"
-        evaluate_datasets(params_dir, out_dir, calibrate=True, save_results=save_results)
+        evaluate_datasets(
+            params_dir,
+            out_dir,
+            calibrate=True,
+            save_results=save_results,
+            test=args.test,
+        )

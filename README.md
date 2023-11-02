@@ -1,6 +1,6 @@
 # Safe and Smooth: Certified Continuous-Time Range-Only Localization
 
-[![Python application](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-app.yml/badge.svg)](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-app.yml)
+[![Python Package using Conda](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml/badge.svg)](https://github.com/utiasASRL/safe_and_smooth/actions/workflows/python-package-conda.yml)
 
 This repository contains the code to reproduce all results of the paper:
 
@@ -17,24 +17,21 @@ A pre-print is available at [https://arxiv.org/abs/2209.04266](https://arxiv.org
 This code was written for Ubuntu 20.04.5, using Python 3.8.10.
 
 ### Local install
+
+Make sure to do a recursive clone:
+```
+git clone --recursive git@github.com:utiasASRL/safe_and_smooth
+```
+
 All requirements can be installed by running
 ```
-pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate safeandsmooth
 ```
-To check that the installation is successful, run
+
+To check that the installation was successful, run
 ```
 pytest .
-```
-
-### Docker install
-Alternatively, the provided Dockerfile can be used to avoid locally installing dependencies. To build the container, run
-```
-sudo docker build -t safe .
-```
-
-To check that the installation is successful, run
-```
-sudo docker run -it --volume $(pwd):/safe safe pytest .
 ```
 
 Please report any installation issues. 
@@ -47,7 +44,7 @@ There are three types of results reported in the paper:
 - Timing study:  Run `simulate_time.py` to generate the runtime comparison (Figure 5)
 - Real data: Run `evaluate_data.py` to evaluate the real dataset (Figures 1, 5 and 6). 
 
-If you are using Docker, you can generate all results by running
+You can generate all results by running
 ```
 _scripts/generate_all_results.sh
 ```

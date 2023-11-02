@@ -9,8 +9,6 @@ from poly_certificate.certificate import get_rho_and_lambdas
 from poly_certificate.gauss_newton import gauss_newton
 from poly_certificate.problem import Problem
 
-from utils.helper_params import parse_log_argument
-
 
 def generate_results(fname, max_N):
     regularization = "constant-velocity"
@@ -73,11 +71,16 @@ def generate_results(fname, max_N):
 
 
 if __name__ == "__main__":
-    max_N = 6 # set to 6 for complete study
+    from utils.helper_params import logs_to_file, parse_arguments
 
-    from utils.helper_params import logs_to_file
-    out_dir = "_results"
-    logging = parse_log_argument(description="Run timing experiments.")
+    max_N = 6
+    out_dir = "_results_final"
+
+    args = parse_arguments("Perform timing study.")
+    if args.test:
+        max_N = 3
+        out_dir = "_results"
+
     results_name = "simulation_time"
 
     logfile = os.path.join(out_dir, results_name)

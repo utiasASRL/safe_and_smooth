@@ -12,7 +12,6 @@ def read_json(filename):
 
 
 def load_parameters(params_dir, out_dir, default_file="default.json"):
-
     default_file = os.path.join(out_dir, default_file)
     if os.path.exists(default_file):
         params = read_json(default_file)
@@ -68,10 +67,26 @@ class logs_to_file(object):
         self.logfile.write(f"Finished logging at {current_time}\n\n")
 
 
-def parse_log_argument(description=""):
+def parse_arguments(description=""):
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
-        "-l", "--logging", help="turn logging on", action="store_true", default=True
+        "-t",
+        "--test",
+        help="turn testing on (use fewer parameters)",
+        action="store_true",
+        default=False,
+    )
+    parser.add_argument(
+        "-r",
+        "--resultdir",
+        help="directory of results",
+        default="_results",
+    )
+    parser.add_argument(
+        "-p",
+        "--plotdir",
+        help="directory for plots",
+        default="_plots_test",
     )
     args = parser.parse_args()
-    return args.logging
+    return args

@@ -159,7 +159,7 @@ def get_prob_matrices(prob, regularization):
 
 
 def get_H(Q_all, A_0, A_list, rho_est, lambdas_est):
-    if type(A_0) == list:
+    if type(A_0) is list:
         assert len(rho_est) == len(A_0)
         assert len(A_list) == len(A_0)
         H = Q_all

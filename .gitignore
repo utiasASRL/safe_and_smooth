@@ -6,16 +6,12 @@ __pycache__/
 *.egg-info/
 
 _plots/
+_plots_test/
 _data/
-_results/*.pkl
 _results/*.log
-_results/*/*.pkl
+_results/**/*.pkl
+_results_final/
 _results_server/
-_results_bkp/
-_results_tmp/
 
-_scripts/get_server_results.sh
-_scripts/*.txt
-matlab/
 *.egg-info/
 *.pdf

@@ -1,5 +1,13 @@
 #!/bin/bash
-sudo docker build -t safe .
-sudo docker rm -f timing; sudo docker run -itd --name "timing" --volume $(pwd):/safe safe python3 simulate_time.py --logging
-sudo docker rm -f simulation; sudo docker run -itd --name "simulation" --volume $(pwd):/safe safe python3 simulate_noise.py --logging
-sudo docker rm -f real; sudo docker run -itd --name "real" --volume $(pwd):/safe safe python3 evaluate_real.py --logging
+
+# run with fewer instances to make sure everything is working properly.
+#python3 _scripts/simulate_time.py --test --resultdir="_results"
+#python3 _scripts/simulate_noise.py --test --resultdir="_results"
+#python3 _scripts/evaluate_real.py --test --resultdir="_results"
+python3 _scripts/plot_results.py --resultdir="_results_server" --plotdir="_plots_test/"
+
+# generate final results
+#python3 _scripts/simulate_time.py --resultdir="_results_final/"
+#python3 _scripts/simulate_noise.py --resultdir="_results_final/"
+#python3 _scripts/evaluate_real.py --resultdir="_results_final/"
+#python3 _scripts/plot_results.py --resultdir="_results_final/" --plotdir="_plots/"

@@ -2,6 +2,7 @@ import itertools
 import time
 import os
 
+import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 import progressbar
@@ -15,7 +16,7 @@ from poly_certificate.problem import Problem
 # 0: none
 # 1: only progress output
 # 2: debugging mode
-VERBOSE = 2
+VERBOSE = 1
 
 # if the relative cost difference between a solution's cost and the minimum cost for the same setup
 # is bigger than TOL_GLOBAL, we consider the solution to be local
@@ -29,38 +30,30 @@ REG = 1e-10
 SAVE_RESULTS = True
 
 
-def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
-
+def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False):
     params = load_parameters(params_dir, out_dir)
     fname = os.path.join(out_dir, params_dir, "results.pkl")
 
     n_inits = params["init_seed"]
-    n_setups = params["setup_seed"]
     init_seeds = np.arange(n_inits)
+    n_setups = params["setup_seed"]
     setup_seeds = np.arange(n_setups)
 
-    results_columns = [
-        "setup seed",
-        "init seed",
-        "noise",
-        "error",
-        "regularization",
-        "sigma acc est",
-        "sigma dist real",
-        "cert value",
-        "cost",
-        "rho",
-        "time",
-    ]
+    sigma_acc_est_list = params["sigma_acc_est"]
+    regularization_list = params["regularization"]
+    sigma_dist_real_list = params["sigma_dist_real"]
+    if test:
+        setup_seeds = [0, 1, 86]
+        sigma_dist_real_list = [1e-3]
+        regularization_list = ["constant-velocity"]
 
-    # n_results = len(noises) * len(n_its) * n_starts
-    results = pd.DataFrame(columns=results_columns)
-    for regularization in params["regularization"]:
+    dfs = []
+    for regularization in regularization_list:
         if VERBOSE > 0:
             print(f"----- regularization: {regularization} ------")
 
         for sigma_acc_est, sigma_dist_real in itertools.product(
-            params["sigma_acc_est"], params["sigma_dist_real"]
+            sigma_acc_est_list, sigma_dist_real_list
         ):
             if VERBOSE > 0:
                 print(
@@ -69,6 +62,7 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                 p = progressbar.ProgressBar(max_value=n_setups)
 
             for i, setup_seed in enumerate(setup_seeds):
+                data = []
                 sigma_dist_est = (
                     params["sigma_dist_est"]
                     if params["sigma_dist_est"] is not None
@@ -88,11 +82,7 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                 )
                 noise_realization = prob.calculate_noise_level()
 
-                results_here = pd.DataFrame(
-                    index=range(n_inits), columns=results_columns
-                )
                 for init_seed in init_seeds:
-
                     np.random.seed(init_seed)
                     theta_0 = prob.random_traj_init(regularization)
 
@@ -117,7 +107,6 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                         "time": None,
                     }
                     if stats["success"]:
-
                         trajectory_est = theta_est[:, : prob.d]
                         cost = stats["cost"]
 
@@ -150,17 +139,28 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                                 "time": ttot,
                             }
                         )
+                        if test:
+                            plt.figure()
+                            plt.scatter(
+                                theta_est[:, 0],
+                                theta_est[:, 1],
+                            )
+                            plt.title(f"init {init_seed}: {cert_value}")
                     elif VERBOSE:
                         print(
                             f"\n GN did not converge at noise level: {sigma_dist_real}"
                         )
-                    results_here.loc[init_seed, :] = result_dict
+
+                    result_dict["init_seed"] = init_seed
+                    data.append(result_dict.copy())
 
                 p.update(i + 1)
                 # endfor inits
 
                 # label global vs. local errors.
+                results_here = pd.DataFrame(data)
                 min_cost = results_here.cost.min()
+                results_here["solution"] = ""
                 rel_error = (results_here.cost - min_cost) / min_cost
                 results_here.loc[
                     rel_error < TOL_GLOBAL,
@@ -170,21 +170,27 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS):
                     rel_error >= TOL_GLOBAL,
                     "solution",
                 ] = "local"
-                results = pd.concat([results, results_here], ignore_index=True)
 
+                dfs.append(results_here)
+            results = pd.concat(dfs, ignore_index=True)
             # endfor it
             if save_results:
                 results.to_pickle(fname)
                 print("saved intermediate as", fname)
+    if test:
+        plt.show()
     return results
 
 
 if __name__ == "__main__":
-    from utils.helper_params import logs_to_file
+    from utils.helper_params import logs_to_file, parse_arguments
 
-    out_dir = "_results/"
+    args = parse_arguments("Run noise simulation.")
+    args.test = True
+    out_dir = args.resultdir
+
     logfile = os.path.join(out_dir, "simulation_noise.log")
     with logs_to_file(logfile):
         params_dir = "simulation_noise/"
         print(f"Running experiment {params_dir}")
-        generate_results(params_dir, out_dir=out_dir)
+        generate_results(params_dir, out_dir=out_dir, test=args.test)
