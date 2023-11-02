@@ -38,7 +38,7 @@ def evaluate_datasets(
 
     datasets = params["datasets"]
     if test:
-        datasets = datasets[:3]
+        datasets = datasets[:1]
 
     # do not change:
     use_gt = False

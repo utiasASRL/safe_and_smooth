@@ -31,6 +31,7 @@ conda env create -f environment.yml
 To check that the installation was successful, run
 ```
 conda activate safeandsmooth
+pip install pytest
 pytest .
 ```
 You can also check that you can generate some toy example results by running

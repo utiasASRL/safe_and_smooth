@@ -18,14 +18,18 @@ from utils.helper_params import load_parameters
 
 from _scripts.evaluate_real import ANCHOR_CHOICE
 
-plt.rcParams.update(
-    {
-        "text.usetex": True,
-        "font.family": "DejaVu Sans",
-        "font.size": 12,
-    }
-)
-plt.rc("text.latex", preamble=r"\usepackage{bm}\usepackage{color}")
+import shutil
+latex = False
+if shutil.which('latex'):
+    latex = True
+    plt.rcParams.update(
+        {
+            "text.usetex": True,
+            "font.family": "DejaVu Sans",
+            "font.size": 12,
+        }
+    )
+    plt.rc("text.latex", preamble=r"\usepackage{bm}\usepackage{color}")
 figsize = 7
 
 
@@ -73,8 +77,9 @@ def plot_problem_setup(plotdir):
         titles=None,
     )
     [ax.set_title("") for ax in axs]
-    [ax.set_ylabel("$\\bm{{Q}}^{{(g)}}$", rotation=0) for ax in [axs[0], axs[2]]]
-    [ax.set_ylabel("$\\bm{{R}}^{{(g)}}$", rotation=0) for ax in [axs[1], axs[3]]]
+    if latex:
+        [ax.set_ylabel("$\\bm{{Q}}^{{(g)}}$", rotation=0) for ax in [axs[0], axs[2]]]
+        [ax.set_ylabel("$\\bm{{R}}^{{(g)}}$", rotation=0) for ax in [axs[1], axs[3]]]
     fig.set_size_inches(6, 2.0)
     fig.tight_layout()
     axs[0].xaxis.set_label_coords(1.3, -0.09)
@@ -679,12 +684,13 @@ if __name__ == "__main__":
     from utils.helper_params import parse_arguments
 
     args = parse_arguments("Plot all results")
-    plot_real_top_calib(args.resultdir, args.plotdir)
+
+    plot_problem_setup(args.plotdir)
 
     plot_noise(args.resultdir, args.plotdir)
     plot_timing(args.resultdir, args.plotdir)
 
     plot_real_top(args.resultdir, args.plotdir)
+    plot_real_top_calib(args.resultdir, args.plotdir)
     plot_real_top_estimate(args.resultdir, args.plotdir)
 
-    plot_problem_setup(args.plotdir)

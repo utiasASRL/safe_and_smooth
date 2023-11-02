@@ -10,8 +10,8 @@ _plots_test/
 _data/
 _results/*.log
 _results/**/*.pkl
-_results/
-_results_test/
+_results_test/*.log
+_results_test/**/*.pkl
 
 *.egg-info/
 *.pdf
