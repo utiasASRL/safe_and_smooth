@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
-from matplotlib.patches import Rectangle
 
 from poly_certificate.gauss_newton import gauss_newton
 from poly_certificate.problem import Problem
@@ -29,8 +28,8 @@ plt.rcParams.update(
 plt.rc("text.latex", preamble=r"\usepackage{bm}\usepackage{color}")
 figsize = 7
 
-# outdir = "_results/"
-outdir = "_results_final/"
+outdir = "_results/"
+# outdir = "_results_final/"
 # outdir = "_results_server/"
 
 
@@ -40,10 +39,6 @@ def plot_problem_setup():
     N = 3
     d = 3
     K = 7
-
-    sigma_dist_est = 1
-    sigma_acc_est = 1
-
     sigma_dist_real = 0.0
     sigma_acc_real = 0.2
 
@@ -52,7 +47,6 @@ def plot_problem_setup():
     prob = Problem(N, d, K)
     prob.generate_random(sigma_acc_real=sigma_acc_real, sigma_dist_real=sigma_dist_real)
 
-    scale = 0.08
     regs = ["no", "zero-velocity", "constant-velocity"]
     all_dict = {}
     for reg in regs:
@@ -141,7 +135,6 @@ def plot_noise():
     regularization = results.regularization.unique()
 
     fig_bin, axs_bin = plt.subplots(1, len(regularization), sharey=True, squeeze=False)
-    # fig_bin.set_size_inches(figsize*0.85, figsize*0.45)
     fig_bin.set_size_inches(figsize * 0.85, figsize * 0.35)
 
     ylabel = "error" if "error" in results.columns else "rmse"
@@ -218,7 +211,7 @@ def plot_noise():
     n_examples = min(n_examples, len(df[df.solution == "local"]["setup seed"].unique()))
     print("number of setups with local solutions:", n_examples)
 
-    fig, axs = plt.subplots(2, n_examples, sharex="col")
+    fig, axs = plt.subplots(2, n_examples, sharex="col", squeeze=False)
     # fig.set_size_inches(size * n_examples, size * 2.3)
     fig.set_size_inches(figsize, figsize / n_examples * 2.3)
     fig.subplots_adjust(wspace=0.05)
@@ -358,14 +351,12 @@ def plot_timing():
     except Exception as e:
         print(e)
         print(f"{fname} not found, generate with simulate_time.py")
-    results
 
 
 def plot_real_top_estimate():
     name = "real_top_estimate"
     fname = os.path.join(outdir, name, "results.pkl")
     results = pd.read_pickle(fname)
-    results
 
     inits = ["gt", "half-flip"]
     solutions = ["global", "local"]
@@ -421,7 +412,6 @@ def plot_real_top():
     # fname = "_results_server/real_top/results.pkl"
     # fname = "_results/real_top/results.pkl"
     results = pd.read_pickle(fname)
-    results
 
     print("average cert time:", results["time cert"].mean())
     print("average solve time:", results["time solve"].mean())
@@ -432,7 +422,10 @@ def plot_real_top():
 
     def plot_rmse_cost(results):
         results = results.apply(pd.to_numeric, errors="ignore", axis=1)
-        results.loc[:, "certificate binary"] = results.certificate >= 0
+        try:  # older version
+            results.loc[:, "certificate binary"] = results.certificate >= 0
+        except AttributeError:  # newer version
+            results.loc[:, "certificate binary"] = results.cert >= 0
 
         fig, ax = plt.subplots()
         styles = {True: "x", False: "o"}
@@ -545,7 +538,10 @@ def plot_real_top_calib():
                 if i == 0:
                     axs[i, j].set_title(f"$\\sigma_a$={sigma}", y=0.95)
                 print(f"dataset{row.dataset} reg:{row.regularization}", end=" ")
-                print(f"rmse: {row.RMSE} cert: {row.certificate}")
+                try:
+                    print(f"rmse: {row.RMSE} cert: {row.certificate}")
+                except AttributeError:
+                    print(f"rmse: {row.RMSE} cert: {row.cert}")
 
                 axs[i, j].grid("on", which="both")
                 axs[i, j].xaxis.set_ticks_position("none")
@@ -605,8 +601,6 @@ def plot_real_top_calib():
     datasets = results.dataset.unique()
 
     ls = {"zero-velocity": ":", "constant-velocity": "-"}
-    errorbar = False
-
     sigma = 1e-3
 
     df = results.loc[results.sigma == sigma]
@@ -618,8 +612,6 @@ def plot_real_top_calib():
 
     ax = axs[0]
     ax_var = axs[1]
-
-    title_proxy = Rectangle((0, 0), 0, 0, color="w")
 
     legends = []
     for reg, df_reg in df.groupby("regularization"):
@@ -692,6 +684,7 @@ if __name__ == "__main__":
     plot_problem_setup()
     plot_noise()
     plot_timing()
+
     plot_real_top()
     plot_real_top_calib()
     plot_real_top_estimate()
