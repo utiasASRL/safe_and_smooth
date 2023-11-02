@@ -2,6 +2,7 @@ import itertools
 import time
 import os
 
+import matplotlib.pylab as plt
 import numpy as np
 import pandas as pd
 import progressbar
@@ -15,7 +16,7 @@ from poly_certificate.problem import Problem
 # 0: none
 # 1: only progress output
 # 2: debugging mode
-VERBOSE = 2
+VERBOSE = 1
 
 # if the relative cost difference between a solution's cost and the minimum cost for the same setup
 # is bigger than TOL_GLOBAL, we consider the solution to be local
@@ -34,21 +35,20 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False)
     fname = os.path.join(out_dir, params_dir, "results.pkl")
 
     n_inits = params["init_seed"]
-    n_setups = params["setup_seed"]
-
-    sigma_acc_est_list = params["sigma_acc_est"]
-    sigma_dist_real_list = params["sigma_dist_real"]
-    if test:
-        n_inits = min(n_inits, 3)
-        n_setups = min(n_setups, 10)
-        sigma_dist_real_list = sigma_dist_real_list[:3]
-        sigma_acc_est_list = sigma_acc_est_list[:3]
-
     init_seeds = np.arange(n_inits)
+    n_setups = params["setup_seed"]
     setup_seeds = np.arange(n_setups)
 
+    sigma_acc_est_list = params["sigma_acc_est"]
+    regularization_list = params["regularization"]
+    sigma_dist_real_list = params["sigma_dist_real"]
+    if test:
+        setup_seeds = [0, 1, 86]
+        sigma_dist_real_list = [1e-3]
+        regularization_list = ["constant-velocity"]
+
     dfs = []
-    for regularization in params["regularization"]:
+    for regularization in regularization_list:
         if VERBOSE > 0:
             print(f"----- regularization: {regularization} ------")
 
@@ -139,6 +139,13 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False)
                                 "time": ttot,
                             }
                         )
+                        if test:
+                            plt.figure()
+                            plt.scatter(
+                                theta_est[:, 0],
+                                theta_est[:, 1],
+                            )
+                            plt.title(f"init {init_seed}: {cert_value}")
                     elif VERBOSE:
                         print(
                             f"\n GN did not converge at noise level: {sigma_dist_real}"
@@ -170,6 +177,8 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False)
             if save_results:
                 results.to_pickle(fname)
                 print("saved intermediate as", fname)
+    if test:
+        plt.show()
     return results
 
 
@@ -177,10 +186,8 @@ if __name__ == "__main__":
     from utils.helper_params import logs_to_file, parse_arguments
 
     args = parse_arguments("Run noise simulation.")
-
-    out_dir = "_results_final/"
-    if args.test:
-        out_dir = "_results/"
+    args.test = True
+    out_dir = args.resultdir
 
     logfile = os.path.join(out_dir, "simulation_noise.log")
     with logs_to_file(logfile):

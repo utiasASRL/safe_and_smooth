@@ -171,7 +171,6 @@ if __name__ == "__main__":
     out_dir = "_results_final/"
 
     args = parse_arguments("Generate dataset results.")
-    args.test = True
     if args.test:
         out_dir = "_results/"
 
