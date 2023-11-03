@@ -11,11 +11,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir ~/.ssh
 ARG ssh_prv_key
 ARG ssh_pub_key
-RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
-    echo "$ssh_pub_key" > /root/.ssh/id_rsa.pub && \
-    chmod 600 /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa.pub && \
-    ssh-keyscan github.com >> /root/.ssh/known_hosts && \
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts && \
     pip3 install git+https://github.com/utiasASRL/poly_matrix && \
     pip3 install git+https://github.com/utiasASRL/safe_and_smooth && \
     rm /root/.ssh/id_rsa*
