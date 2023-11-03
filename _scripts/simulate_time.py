@@ -74,13 +74,11 @@ if __name__ == "__main__":
     from poly_certificate.utils.helper_params import logs_to_file, parse_arguments
 
     max_N = 6
-    out_dir = "_results_final"
 
     args = parse_arguments("Perform timing study.")
     if args.test:
         max_N = 3
-        out_dir = "_results"
-
+    out_dir = args.resultdir
     results_name = "simulation_time"
 
     logfile = os.path.join(out_dir, results_name)

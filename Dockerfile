@@ -5,16 +5,13 @@ RUN apt-get update && \
     apt-get install -y sudo git-core bash-completion  && \
 		apt-get install -y python3-pip && \
 		pip3 install --upgrade pip && \
-    pip3 install pytest
+		pip3 install pytest
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir ~/.ssh
-ARG ssh_prv_key
-ARG ssh_pub_key
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts && \
     pip3 install git+https://github.com/utiasASRL/poly_matrix && \
-    pip3 install git+https://github.com/utiasASRL/safe_and_smooth && \
-    rm /root/.ssh/id_rsa*
+    pip3 install git+https://github.com/utiasASRL/safe_and_smooth
 
 RUN mkdir /home/user
 WORKDIR /home/user/safe_and_smooth
