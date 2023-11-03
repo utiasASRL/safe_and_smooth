@@ -71,7 +71,7 @@ def generate_results(fname, max_N):
 
 
 if __name__ == "__main__":
-    from utils.helper_params import logs_to_file, parse_arguments
+    from poly_certificate.utils.helper_params import logs_to_file, parse_arguments
 
     max_N = 6
     out_dir = "_results_final"

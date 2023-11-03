@@ -18,7 +18,7 @@ from poly_certificate.gauss_newton import gauss_newton
 from poly_certificate.problem import Problem
 from poly_certificate.datasets import ANCHOR_CHOICE
 
-from utils.helper_params import load_parameters
+from poly_certificate.utils.helper_params import load_parameters
 
 DEFAULT_FILE = "default_real.json"
 
@@ -165,7 +165,7 @@ def evaluate_datasets(
 
 
 if __name__ == "__main__":
-    from utils.helper_params import logs_to_file, parse_arguments
+    from poly_certificate.utils.helper_params import logs_to_file, parse_arguments
 
     save_results = True
     args = parse_arguments("Generate dataset results.")

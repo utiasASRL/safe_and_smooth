@@ -15,6 +15,7 @@ RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa.pub && \
     ssh-keyscan github.com >> /root/.ssh/known_hosts && \
+    pip install git+https://github.com/utiasASRL/poly_matrix && \
     pip install git+https://github.com/utiasASRL/safe_and_smooth && \
     rm /root/.ssh/id_rsa*
 

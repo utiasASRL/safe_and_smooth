@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import progressbar
 
-from utils.helper_params import load_parameters
+from poly_certificate.utils.helper_params import load_parameters
 
 from poly_certificate.certificate import get_certificate, get_rho_and_lambdas
 from poly_certificate.gauss_newton import gauss_newton
@@ -183,7 +183,7 @@ def generate_results(params_dir, out_dir, save_results=SAVE_RESULTS, test=False)
 
 
 if __name__ == "__main__":
-    from utils.helper_params import logs_to_file, parse_arguments
+    from poly_certificate.utils.helper_params import logs_to_file, parse_arguments
 
     args = parse_arguments("Run noise simulation.")
     args.test = True

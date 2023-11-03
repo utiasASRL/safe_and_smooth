@@ -8,13 +8,15 @@ from poly_certificate.gauss_newton import gauss_newton
 from poly_certificate.problem import Problem
 from poly_certificate.sdp_setup import get_prob_matrices
 
-from utils.plotting_tools import add_scalebar
-from utils.plotting_tools import fill_fn_tp, fn_tp_styles
-from utils.plotting_tools import plot_3d_curves
-from utils.plotting_tools import plot_cert_fn_tp
-from utils.plotting_tools import plot_decomposition
-from utils.plotting_tools import savefig
-from utils.helper_params import load_parameters
+from poly_certificate.utils.plotting_tools import add_scalebar
+from poly_certificate.utils.plotting_tools import fill_fn_tp, fn_tp_styles
+from poly_certificate.utils.plotting_tools import plot_3d_curves
+from poly_certificate.utils.plotting_tools import plot_cert_fn_tp
+from poly_certificate.utils.plotting_tools import plot_decomposition
+from poly_certificate.utils.plotting_tools import savefig
+from poly_certificate.utils.helper_params import parse_arguments
+from poly_certificate.utils.helper_params import load_parameters
+
 
 from _scripts.evaluate_real import ANCHOR_CHOICE
 
@@ -676,7 +678,6 @@ def plot_real_top_calib(outdir, plotdir):
 
 
 if __name__ == "__main__":
-    from utils.helper_params import parse_arguments
 
     args = parse_arguments("Plot all results")
     plot_real_top_calib(args.resultdir, args.plotdir)
