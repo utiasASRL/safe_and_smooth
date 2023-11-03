@@ -186,7 +186,6 @@ if __name__ == "__main__":
     from poly_certificate.utils.helper_params import logs_to_file, parse_arguments
 
     args = parse_arguments("Run noise simulation.")
-    args.test = True
     out_dir = args.resultdir
 
     logfile = os.path.join(out_dir, "simulation_noise.log")
