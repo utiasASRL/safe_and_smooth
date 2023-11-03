@@ -14,7 +14,7 @@ A pre-print is available at [https://arxiv.org/abs/2209.04266](https://arxiv.org
 
 ## Installation
 
-This code was last tested with Ubuntu 20.04.1, using Python 3.10.3
+This code was last tested with Ubuntu 20.04.1, using Python 3.10.3.
 
 ### Local install
 
@@ -40,7 +40,19 @@ _scripts/generate_test_results.sh
 ```
 and then checking the output created in `_plots_test`. 
 
-Please report any installation issues. 
+### Docker install
+
+You can also use docker to run the code in this repository. To create the docker image, you can run
+```
+make safe-build
+```
+and to test that installation was successful, you can run
+```
+make safe-test
+```
+which runs `pytest` and generates test data. 
+
+
 
 ## Generate results
 
@@ -50,11 +62,18 @@ There are three types of results reported in the paper:
 - Timing study:  Run `_scripts/simulate_time.py` to generate the runtime comparison (Figure 5)
 - Real data: Run `_scripts/evaluate_real.py` to evaluate the real dataset (Figures 1, 5 and 6). 
 
-You can generate all results by running
+You can generate all results by running (this will take a while)
 ```
 _scripts/generate_all_results.sh
 ```
 After generating, all data can be evaluated, and new figures created, by running `python _scripts/plot_results.py`. For more evaluations of the real dataset, refer to the notebook `_notebooks/DatasetEvaluation.ipynb` (you may need to run `pip install -r requirements.txt` for additional plotting libraries). 
+
+### Docker instructions
+
+If you are using docker, you can use this one-liner to run the above command in a docker container:
+```
+make safe-run
+```
 
 ## Code references
 

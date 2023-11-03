@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pylab as plt
 
+from poly_certificate.datasets import ANCHOR_CHOICE
 from poly_certificate.gauss_newton import gauss_newton
 from poly_certificate.problem import Problem
 from poly_certificate.sdp_setup import get_prob_matrices
@@ -18,7 +19,6 @@ from poly_certificate.utils.helper_params import parse_arguments
 from poly_certificate.utils.helper_params import load_parameters
 
 
-from _scripts.evaluate_real import ANCHOR_CHOICE
 
 import shutil
 latex = False

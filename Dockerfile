@@ -1,10 +1,11 @@
 #FROM python:3.10-bookworm
 FROM ubuntu:22.04
 
-RUN apt-get update \
-    && apt-get install -y sudo git-core bash-completion \
-		&& apt-get install -y python3-pip \
-		&& pip3 install --upgrade pip
+RUN apt-get update && \
+    apt-get install -y sudo git-core bash-completion  && \
+		apt-get install -y python3-pip && \
+		pip3 install --upgrade pip && \
+    pip3 install pytest
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir ~/.ssh
@@ -15,8 +16,8 @@ RUN echo "$ssh_prv_key" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa.pub && \
     ssh-keyscan github.com >> /root/.ssh/known_hosts && \
-    pip install git+https://github.com/utiasASRL/poly_matrix && \
-    pip install git+https://github.com/utiasASRL/safe_and_smooth && \
+    pip3 install git+https://github.com/utiasASRL/poly_matrix && \
+    pip3 install git+https://github.com/utiasASRL/safe_and_smooth && \
     rm /root/.ssh/id_rsa*
 
 RUN mkdir /home/user
