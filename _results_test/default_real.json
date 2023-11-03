@@ -1,0 +1,12 @@
+{
+    "sigma_dist_est": 0.05,
+    "save_estimate": false,
+    "time_range": null,
+    "sigma_acc_est_list": [
+        3e-3
+    ],
+    "datasets": [],
+    "use_anchors_list": [
+        "top"
+    ]
+}

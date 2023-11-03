@@ -1,0 +1,11 @@
+{
+    "sigma_dist_est": null,
+    "sigma_acc_est": [
+        0.2
+    ],
+    "regularization": [
+        "no",
+        "zero-velocity",
+        "constant-velocity"
+    ]
+}

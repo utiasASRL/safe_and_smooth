@@ -1,0 +1,33 @@
+{
+    "sigma_dist_est": 0.05,
+    "save_estimate": true,
+    "sigma_acc_est_list": [
+        1e-4,
+        1e-3,
+        1e-2
+    ],
+    "time_range": [
+        10,
+        50
+    ],
+    "datasets": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+    ],
+    "inits": [
+        "gt"
+    ],
+    "use_anchors_list": [
+        "top"
+    ],
+    "regularization": [
+        "zero-velocity",
+        "constant-velocity"
+    ]
+}
